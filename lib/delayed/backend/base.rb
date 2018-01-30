@@ -95,7 +95,7 @@ module Delayed
       def disconnect_if_need_it
         size_connection = ::ActiveRecord::Base.connection_pool.instance_variable_get("@reserved_connections").size
         if size_connection > 1
-          ::Rollar.error(
+          ::Rollbar.error(
             "Jobs have too many reserved connections",
             {name: name, size: size_connection}
           )
