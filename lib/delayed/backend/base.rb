@@ -78,7 +78,7 @@ module Delayed
         Delayed::Worker.lifecycle.run_callbacks(:invoke_job, self) do
           begin
             hook :before
-            ActiveRecord::Base.connection_pool.with_connection do
+            ::ActiveRecord::Base.connection_pool.with_connection do
               payload_object.perform
             end
             hook :success
@@ -93,14 +93,14 @@ module Delayed
       end
 
       def disconnect_if_need_it
-        size_connection = ActiveRecord::Base.connection_pool.instance_variable_get("@reserved_connections").size
+        size_connection = ::ActiveRecord::Base.connection_pool.instance_variable_get("@reserved_connections").size
         if size_connection > 1
           Rollar.error(
             "Jobs have too many reserved connections",
             {name: name, size: size_connection}
           )
         end
-        ActiveRecord::Base.connection_pool.disconnect!
+        ::ActiveRecord::Base.connection_pool.disconnect!
       end
 
       # Unlock this job (note: not saved to DB)
