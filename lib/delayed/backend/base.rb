@@ -93,14 +93,16 @@ module Delayed
       end
 
       def disconnect_if_need_it
-        size_connection = ::ActiveRecord::Base.connection_pool.instance_variable_get("@reserved_connections").size
-        if size_connection > 1
-          ::Rollbar.error(
-            "Jobs have too many reserved connections",
-            {name: name, size: size_connection}
-          )
+        unless ::Rails.env.test?
+          size_connection = ::ActiveRecord::Base.connection_pool.instance_variable_get("@reserved_connections").size
+          if size_connection > 1
+            ::Rollbar.error(
+              "Jobs have too many reserved connections",
+              {name: name, size: size_connection}
+            )
+          end
+          ::ActiveRecord::Base.connection_pool.disconnect!
         end
-        ::ActiveRecord::Base.connection_pool.disconnect!
       end
 
       # Unlock this job (note: not saved to DB)
